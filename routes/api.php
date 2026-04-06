@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AulaController;
+use App\Http\Controllers\InstrutorController;
 use App\Http\Controllers\UsuarioController;
 
 
@@ -20,7 +22,9 @@ Route::post('usuarios/{id}/restore', [UsuarioController::class, 'restore']);
 
 /* ----------ROTAS PARA INSTRUTORES---------- */
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('cursos/{id_curso}/aulas', [AulaController::class, 'indexPorCurso']);
     Route::apiResource('instrutores', InstrutorController::class);
+    Route::apiResource('aulas', AulaController::class);
 });
 
 /*
