@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InstrutorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsuarioController;
@@ -23,12 +24,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('instrutores', InstrutorController::class);
 });
 
-/*
- * Rotas geradas automaticamente pelo apiResource:
- *
- * GET    /api/instrutores         → index()    listar todos
- * POST   /api/instrutores         → store()    criar
- * GET    /api/instrutores/{id}    → show()     ver um
- * PUT    /api/instrutores/{id}    → update()   actualizar
- * DELETE /api/instrutores/{id}    → destroy()  eliminar
- */
+
+/* ----------ROTAS PARA CURSOS---------- */
+Route::apiResource('cursos', 'App\Http\Controller\CursoController');
+
+// Rotas adicionais para soft delete e hard delete
+Route::get('cursos/trashed/list', 'App\Http\Controller\CursoController@trashed');
+Route::delete('cursos/{id}/force', 'App\Http\Controller\CursoController@forceDestroy');
+Route::post('cursos/{id}/restore', 'App\Http\Controller\CursoController@restore');

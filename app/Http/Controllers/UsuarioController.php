@@ -11,7 +11,7 @@ class UsuarioController
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index() 
     {
         $usuarios = Usuario::all();
         return response()->json($usuarios, 200);
@@ -91,6 +91,10 @@ class UsuarioController
 
         return response()->json(['message' => 'Usuário deletado com sucesso'], 200);
     }
+
+    
+
+    //---------------------- FUNÇÕES ADICIONAIS ---------------------------
 
     /**
      * Display a listing of soft deleted users.
