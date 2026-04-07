@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreInstrutorRequest;
 use App\Http\Requests\UpdateInstrutorRequest;
 use App\Http\Resources\InstrutorResource;
+use App\Models\Instrutor;
 use App\Services\InstrutorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
@@ -60,5 +61,51 @@ class InstrutorController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
+    }
+    
+
+    
+
+    //---------------------- FUNÇÕES ADICIONAIS HARD DELETE E RESTAURAÇÃO ---------------------------
+
+    /**
+     * Display a listing of soft deleted users.
+     */
+    public function trashed()
+    {
+        $instrutoresDeletados = Instrutor::onlyTrashed()->get();
+        return response()->json($instrutoresDeletados, 200);
+    }
+
+    /**
+     * Permanently delete a soft deleted user.
+     */
+    public function forceDestroy(string $id)
+    {
+        $instrutor = Instrutor::withTrashed()->find($id);
+
+        if (empty($instrutor)) {
+            return response()->json(['message' => 'Instrutor não encontrado'], 404);
+        }
+
+        $instrutor->forceDelete();
+
+        return response()->json(['message' => 'Instrutor permanentemente deletado'], 200);
+    }
+
+    /**
+     * Restore a soft deleted user.
+     */
+    public function restore(string $id)
+    {
+        $instrutor = Instrutor::withTrashed()->find($id);
+
+        if (empty($instrutor)) {
+            return response()->json(['message' => 'Instrutor não encontrado'], 404);
+        }
+
+        $instrutor->restore();
+
+        return response()->json(['message' => 'Instrutor restaurado com sucesso', 'data' => $instrutor], 200);
     }
 }

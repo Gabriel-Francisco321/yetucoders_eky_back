@@ -94,7 +94,7 @@ class UsuarioController
 
     
 
-    //---------------------- FUNÇÕES ADICIONAIS ---------------------------
+    //---------------------- FUNÇÕES ADICIONAIS HARD DELETE E RESTAURAÇÃO ---------------------------
 
     /**
      * Display a listing of soft deleted users.
