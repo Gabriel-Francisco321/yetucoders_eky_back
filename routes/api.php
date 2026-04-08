@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AulaController;
+use App\Http\Controllers\InstrutorController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\InstrutorController;
@@ -30,13 +32,11 @@ Route::delete('categorias/{id}/force', [CategoriaController::class, 'forceDestro
 Route::post('categorias/{id}/restore', [CategoriaController::class, 'restore']);
 
 
-/* ----------ROTAS PARA INSTRUTORES---------- */
+/* ----------ROTAS PARA INSTRUTORES/AULAS---------- */
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('cursos/{id_curso}/aulas', [AulaController::class, 'indexPorCurso']);
     Route::apiResource('instrutores', InstrutorController::class);
-
-    Route::get('instrutor/trashed/list', [InstrutorController::class, 'trashed']);
-    Route::delete('instrutor/{id}/force', [InstrutorController::class, 'forceDestroy']);
-    Route::post('instrutor/{id}/restore', [InstrutorController::class, 'restore']);
+    Route::apiResource('aulas', AulaController::class);
 });
 
 
