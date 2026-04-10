@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->int('nota');
             $table->text('comentário');
-            $table->foreignId("id_usuario")->constrained()->onDelete();
+            $table->foreignId("id_usuario")->constrained("usuarios")->onDelete('cascade');
+            $table->foreignId("id_curso")->constrained("cursos")->onDelete('cascade');
             $table->timestamps();
         });
     }

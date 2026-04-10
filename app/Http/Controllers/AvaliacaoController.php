@@ -14,7 +14,7 @@ class AvaliacaoController
     public function index()
     {
         $avaliacoes = Avaliacao::where('id_usuario', Auth::id())->get();
-        return response()->json($avaliacoes);
+        return response()->json($avaliacoes, 200);
     }
 
     /**
@@ -51,6 +51,15 @@ class AvaliacaoController
         $avaliacao->delete();
         return response()->json([
             'mensagem'=>'Avalição removida com sucesso'
-        ], 204);
+        ], 200);
+    }
+
+    /**
+     * Retorna uma lista de todas as avaliações de um curso 
+     */
+    public function avaliacaoPorCurso(string $id_curso){
+        $avaliacoes = Avaliacao::where('id_curso', $id_curso())->get();
+        $clacificacao = Avaliacao::avg('nota');
+        return response()->json([$avaliacoes, $clacificacao], 200);
     }
 }
