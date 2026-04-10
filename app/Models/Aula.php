@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Curso;
 
 class Aula extends Model
 {
@@ -26,6 +27,6 @@ class Aula extends Model
 
     public function curso(): BelongsTo
     {
-        return $this->belongsTo('App\\Models\\Curso', 'id_curso');
+        return $this->belongsTo(Curso::class, 'id_curso');
     }
 }

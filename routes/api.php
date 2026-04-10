@@ -6,7 +6,6 @@ use App\Http\Controllers\AulaController;
 use App\Http\Controllers\InstrutorController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\InstrutorController;
 use App\Http\Controllers\CursoController;
 
 
@@ -24,7 +23,7 @@ Route::post('usuarios/{id}/restore', [UsuarioController::class, 'restore']);
 
 
 /* ----------ROTAS PARA CATEGORIAS---------- */
-Route::apiResource('categorias', 'App\Http\Controller\CategoriasController');
+Route::apiResource('categorias', CategoriaController::class);
 
 // Rotas adicionais para hard delete e restauração
 Route::get('categorias/trashed/list', [CategoriaController::class, 'trashed']);
@@ -41,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 /* ----------ROTAS PARA CURSOS---------- */
-Route::apiResource('cursos', 'App\Http\Controller\CursoController');
+Route::apiResource('cursos', CursoController::class);
 
 // Rotas adicionais para hard delete e restauração
 Route::get('cursos/trashed/list', [CursoController::class, 'trashed']);

@@ -26,11 +26,11 @@ class AulaController extends Controller
         return AulaResource::collection($aulas)->response();
     }
 
-    public function show(int $id): JsonResponse
+    public function show(int $aula): JsonResponse
     {
         try {
-            $aula = $this->service->buscar($id);
-            return (new AulaResource($aula))->response();
+            $aulaEncontrada = $this->service->buscar($aula);
+            return (new AulaResource($aulaEncontrada))->response();
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
@@ -42,20 +42,20 @@ class AulaController extends Controller
         return (new AulaResource($aula))->response()->setStatusCode(201);
     }
 
-    public function update(UpdateAulaRequest $request, int $id): JsonResponse
+    public function update(UpdateAulaRequest $request, int $aula): JsonResponse
     {
         try {
-            $aula = $this->service->actualizar($id, $request->validated());
-            return (new AulaResource($aula))->response();
+            $aulaActualizada = $this->service->actualizar($aula, $request->validated());
+            return (new AulaResource($aulaActualizada))->response();
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
     }
 
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $aula): JsonResponse
     {
         try {
-            $this->service->eliminar($id);
+            $this->service->eliminar($aula);
             return response()->json(['message' => 'Aula removida com sucesso.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);

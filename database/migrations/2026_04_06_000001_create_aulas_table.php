@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('aulas', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_curso');
+            $table->foreignId('id_curso')->constrained('cursos')->onDelete('cascade');
             $table->string('titulo');
             $table->enum('tipo', ['video', 'texto', 'pdf']);
             $table->string('conteudo_url', 2048);
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedInteger('ordem');
             $table->timestamps();
 
-            $table->index('id_curso');
+            $table->unique(['id_curso', 'ordem']);
         });
     }
 
