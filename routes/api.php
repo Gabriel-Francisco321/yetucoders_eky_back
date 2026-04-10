@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AulaController;
-use App\Http\Controllers\InstrutorController;
+use App\Http\Controllers\AvaliacaoController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\InstrutorController;
@@ -47,3 +47,10 @@ Route::apiResource('cursos', 'App\Http\Controller\CursoController');
 Route::get('cursos/trashed/list', [CursoController::class, 'trashed']);
 Route::delete('cursos/{id}/force', [CursoController::class, 'forceDestroy']);
 Route::post('cursos/{id}/restore', [CursoController::class, 'restore']);
+
+
+/* ----------ROTAS PARA CURSOS---------- */
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('avaliacoes', AvaliacaoController::class);
+    Route::get('curso/{id_curso}/avaliacoes', [AvaliacaoController::class, 'avaliacaoPorCurso']);
+});
