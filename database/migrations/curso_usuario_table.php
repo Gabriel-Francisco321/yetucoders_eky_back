@@ -3,15 +3,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 Schema::create('curso_usuario', function (Blueprint $table) {
-    $table->foreignId('id_curso')
+    $table->foreignId('curso_id')
         ->constrained('cursos')
         ->onDelete('cascade');
 
-    $table->foreignId('id_usuario')
+    $table->foreignId('usuario_id')
         ->constrained('usuarios')
         ->onDelete('cascade');
 
     $table->timestamps();
 
-    $table->primary(['id_curso', 'id_usuario']);
+    $table->primary(['curso_id', 'usuario_id']);
 });
