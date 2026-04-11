@@ -58,8 +58,8 @@ class AvaliacaoController
      * Retorna uma lista de todas as avaliações de um curso 
      */
     public function avaliacaoPorCurso(string $id_curso){
-        $avaliacoes = Avaliacao::where('id_curso', $id_curso())->get();
-        $clacificacao = Avaliacao::avg('nota');
+        $avaliacoes = Avaliacao::where('id_curso', $id_curso)->get();
+        $clacificacao = Avaliacao::where('id_curso', $id_curso)->avg('nota');
         return response()->json([$avaliacoes, $clacificacao], 200);
     }
 }
