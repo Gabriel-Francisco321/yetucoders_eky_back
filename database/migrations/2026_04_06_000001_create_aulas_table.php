@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('conteudo_url', 2048);
             $table->unsignedInteger('duracao');
             $table->unsignedInteger('ordem');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('id_curso');
