@@ -2,55 +2,62 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AulaController;
 use App\Http\Controllers\AvaliacaoController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\InstrutorController;
 use App\Http\Controllers\CursoController;
+use App\Http\Controllers\CursoUsuarioController;
 
-
-/* ----------ROTAS PARA USUÁRIOS---------- */
+/* ---------- USUÁRIO LOGADO ---------- */
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::apiResource('usuarios', 'App\\Http\\Controllers\\UsuarioController');
 
-// Rotas adicionais para hard delete e restauração
+/* ---------- USUÁRIOS ---------- */
+Route::apiResource('usuarios', UsuarioController::class);
+
 Route::get('usuarios/trashed/list', [UsuarioController::class, 'trashed']);
 Route::delete('usuarios/{id}/force', [UsuarioController::class, 'forceDestroy']);
 Route::post('usuarios/{id}/restore', [UsuarioController::class, 'restore']);
 
 
-/* ----------ROTAS PARA CATEGORIAS---------- */
-Route::apiResource('categorias', 'App\Http\Controller\CategoriasController');
+/* ---------- CATEGORIAS ---------- */
+Route::apiResource('categorias', CategoriaController::class);
 
-// Rotas adicionais para hard delete e restauração
 Route::get('categorias/trashed/list', [CategoriaController::class, 'trashed']);
 Route::delete('categorias/{id}/force', [CategoriaController::class, 'forceDestroy']);
 Route::post('categorias/{id}/restore', [CategoriaController::class, 'restore']);
 
 
-/* ----------ROTAS PARA INSTRUTORES/AULAS---------- */
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('cursos/{id_curso}/aulas', [AulaController::class, 'indexPorCurso']);
-    Route::apiResource('instrutores', InstrutorController::class);
-    Route::apiResource('aulas', AulaController::class);
-});
+/* ---------- CURSOS ---------- */
+Route::apiResource('cursos', CursoController::class);
 
-
-/* ----------ROTAS PARA CURSOS---------- */
-Route::apiResource('cursos', 'App\Http\Controller\CursoController');
-
-// Rotas adicionais para hard delete e restauração
 Route::get('cursos/trashed/list', [CursoController::class, 'trashed']);
 Route::delete('cursos/{id}/force', [CursoController::class, 'forceDestroy']);
 Route::post('cursos/{id}/restore', [CursoController::class, 'restore']);
 
 
-/* ----------ROTAS PARA CURSOS---------- */
+/* ---------- INSTRUTORES E AULAS (PROTEGIDO) ---------- */
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::apiResource('instrutores', InstrutorController::class);
+    Route::apiResource('aulas', AulaController::class);
+
+    Route::get('cursos/{id_curso}/aulas', [AulaController::class, 'indexPorCurso']);
+
     Route::apiResource('avaliacoes', AvaliacaoController::class);
+
     Route::get('curso/{id_curso}/avaliacoes', [AvaliacaoController::class, 'avaliacaoPorCurso']);
 });
+
+
+/* ---------- RELACIONAMENTO CURSO ↔ USUÁRIO ---------- */
+Route::post('/inscrever', [CursoUsuarioController::class, 'inscrever']);
+Route::post('/cancelar-inscricao', [CursoUsuarioController::class, 'cancelar']);
+
+Route::get('/usuarios/{id}/cursos', [CursoUsuarioController::class, 'cursosDoUsuario']);
+Route::get('/curso/{id}/usuarios', [CursoUsuarioController::class, 'usuariosDoCurso']);
