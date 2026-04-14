@@ -30,7 +30,7 @@ class AvaliacaoController extends Controller
     {
         try {
             $this->service->eliminar($id, Auth::id());
-            return response()->json(['message' => 'Avalia\u00e7\u00e3o removida com sucesso.']);
+            return response()->json(['message' => 'Avaliação removida com sucesso.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }

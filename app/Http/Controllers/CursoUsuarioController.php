@@ -21,7 +21,7 @@ class CursoUsuarioController extends Controller
 
         try {
             $this->service->inscrever($validated['usuario_id'], $validated['curso_id']);
-            return response()->json(['message' => 'Inscri\u00e7\u00e3o realizada com sucesso'], 201);
+            return response()->json(['message' => 'Inscrição realizada com sucesso'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
@@ -36,7 +36,7 @@ class CursoUsuarioController extends Controller
 
         $this->service->cancelar($validated['usuario_id'], $validated['curso_id']);
 
-        return response()->json(['message' => 'Inscri\u00e7\u00e3o cancelada com sucesso'], 200);
+        return response()->json(['message' => 'Inscrição cancelada com sucesso'], 200);
     }
 
     public function cursosDoUsuario(int $usuario_id): JsonResponse

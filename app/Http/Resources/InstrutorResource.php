@@ -17,8 +17,8 @@ class InstrutorResource extends JsonResource
                 'nome' => $this->usuario->nome,
                 'email' => $this->usuario->email,
             ],
-            'criado_em' => $this->created_at->format('d/m/Y H:i'),
-            'actualizado_em' => $this->updated_at->format('d/m/Y H:i'),
+            'criado_em' => $this->created_at?->format('d/m/Y H:i'),
+            'actualizado_em' => $this->updated_at?->format('d/m/Y H:i'),
         ];
     }
 }
