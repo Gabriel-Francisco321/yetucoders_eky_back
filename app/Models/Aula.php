@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Aula extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'aulas';
 
     protected $fillable = [
@@ -26,6 +29,6 @@ class Aula extends Model
 
     public function curso(): BelongsTo
     {
-        return $this->belongsTo('App\\Models\\Curso', 'id_curso');
+        return $this->belongsTo(Curso::class, 'id_curso');
     }
 }

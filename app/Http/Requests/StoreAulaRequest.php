@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAulaRequest extends FormRequest
 {
@@ -14,12 +15,17 @@ class StoreAulaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id_curso' => ['required', 'integer', 'min:1'],
+            'id_curso' => ['required', 'integer', 'exists:cursos,id'],
             'titulo' => ['required', 'string', 'max:255'],
             'tipo' => ['required', 'in:video,texto,pdf'],
             'conteudo_url' => ['required', 'url', 'max:2048'],
             'duracao' => ['required', 'integer', 'min:1'],
-            'ordem' => ['required', 'integer', 'min:1'],
+            'ordem' => [
+                'required',
+                'integer',
+                'min:1',
+                Rule::unique('aulas')->where(fn ($q) => $q->where('id_curso', $this->input('id_curso'))),
+            ],
         ];
     }
 }

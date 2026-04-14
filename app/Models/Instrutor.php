@@ -10,11 +10,12 @@ class Instrutor extends Model
 {
     use SoftDeletes;
 
-    protected $table    = 'instrutores';
+    protected $table = 'instrutores';
+
     protected $fillable = ['id_usuario', 'biografia'];
 
     public function usuario(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'id_usuario');
     }
 }

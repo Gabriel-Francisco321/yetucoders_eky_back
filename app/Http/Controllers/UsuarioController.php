@@ -6,20 +6,14 @@ use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-class UsuarioController
+class UsuarioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index() 
+    public function index()
     {
         $usuarios = Usuario::all();
         return response()->json($usuarios, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -35,9 +29,6 @@ class UsuarioController
         return response()->json($usuario, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $usuario = Usuario::find($id);
@@ -49,9 +40,6 @@ class UsuarioController
         return response()->json($usuario, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $usuario = Usuario::find($id);
@@ -76,9 +64,6 @@ class UsuarioController
         return response()->json($usuario, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $usuario = Usuario::find($id);
@@ -92,22 +77,12 @@ class UsuarioController
         return response()->json(['message' => 'Usuário deletado com sucesso'], 200);
     }
 
-    
-
-    //---------------------- FUNÇÕES ADICIONAIS HARD DELETE E RESTAURAÇÃO ---------------------------
-
-    /**
-     * Display a listing of soft deleted users.
-     */
     public function trashed()
     {
         $usuariosDeletados = Usuario::onlyTrashed()->get();
         return response()->json($usuariosDeletados, 200);
     }
 
-    /**
-     * Permanently delete a soft deleted user.
-     */
     public function forceDestroy(string $id)
     {
         $usuario = Usuario::withTrashed()->find($id);
@@ -121,9 +96,6 @@ class UsuarioController
         return response()->json(['message' => 'Usuário permanentemente deletado'], 200);
     }
 
-    /**
-     * Restore a soft deleted user.
-     */
     public function restore(string $id)
     {
         $usuario = Usuario::withTrashed()->find($id);

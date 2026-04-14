@@ -3,18 +3,33 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Avaliacao extends Model
 {
-    protected $table = "avaliacao";
+    use SoftDeletes;
+
+    protected $table = 'avaliacoes';
+
     protected $fillable = [
-        "nota",
-        "comentário",
-        "id_usuario",
-        "id_curso",
+        'nota',
+        'comentario',
+        'id_usuario',
+        'id_curso',
     ];
 
-    public function usuario(){
-        return $this->belongsTo(Usuario::class, "id_usuario");
+    protected $casts = [
+        'nota' => 'integer',
+    ];
+
+    public function usuario(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'id_usuario');
+    }
+
+    public function curso(): BelongsTo
+    {
+        return $this->belongsTo(Curso::class, 'id_curso');
     }
 }

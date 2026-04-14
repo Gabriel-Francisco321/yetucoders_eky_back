@@ -4,32 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\Curso;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
-class CursoController
+class CursoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $cursos = Curso::all();
         return response()->json($cursos, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
-            'descrição' => 'required|max:500',
+            'descricao' => 'required|max:500',
             'objectivos' => 'required|max:300',
-            'requisitos' => 'max:300',
-            'preco' => 'decimal:0,2',
-            'nivel' => 'required|in:Iniciante,Intermediário,Avançado',
-            'id_instrutor' => 'required|integer|exists:instrutor,id|unique:cursos,id_instrutor',
-            'id_categoria' => 'required|integer|exists:categoria,id',
+            'requisitos' => 'nullable|max:300',
+            'preco' => 'nullable|decimal:0,2',
+            'nivel' => 'required|in:Iniciante,Intermedi\u00e1rio,Avan\u00e7ado',
+            'id_instrutor' => 'required|integer|exists:instrutores,id',
+            'id_categoria' => 'required|integer|exists:categorias,id',
         ]);
 
         $curso = Curso::create($validated);
@@ -37,56 +32,47 @@ class CursoController
         return response()->json($curso, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $curso = Curso::find($id);
 
-        if (empty($curso)) {
-            return response()->json(['message' => 'Curso não encontrado'], 404);
+        if (!$curso) {
+            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
         }
 
-        return response()->json($curso, 201);
+        return response()->json($curso, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $curso = Curso::find($id);
 
-        if (empty($curso)) {
-            return response()->json(['message' => 'Curso não encontrado'], 404);
+        if (!$curso) {
+            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
         }
 
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
-            'descrição' => 'required|max:500',
+            'descricao' => 'required|max:500',
             'objectivos' => 'required|max:300',
-            'requisitos' => 'max:300',
-            'preco' => 'decimal:0,2',
-            'nivel' => 'required|in:Iniciante,Intermediário,Avançado',
-            'id_instrutor' => 'required|integer|exists:instrutor,id|unique:cursos,id_instrutor',
-            'id_categoria' => 'required|integer|exists:categoria,id',
+            'requisitos' => 'nullable|max:300',
+            'preco' => 'nullable|decimal:0,2',
+            'nivel' => 'required|in:Iniciante,Intermedi\u00e1rio,Avan\u00e7ado',
+            'id_instrutor' => ['required', 'integer', 'exists:instrutores,id'],
+            'id_categoria' => 'required|integer|exists:categorias,id',
         ]);
 
         $curso->update($validated);
 
-        return response()->json($curso, 201);
+        return response()->json($curso, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $curso = Curso::find($id);
 
-        if (empty($curso)) {
-            return response()->json(['message' => 'Curso não encontrado'], 404);
+        if (!$curso) {
+            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
         }
 
         $curso->delete();
@@ -94,29 +80,18 @@ class CursoController
         return response()->json(['message' => 'Curso deletado com sucesso'], 200);
     }
 
-
-    
-
-    //---------------------- FUNÇÕES ADICIONAIS HARD DELETE E RESTAURAÇÃO ---------------------------
-
-    /**
-     * Display a listing of soft deleted users.
-     */
     public function trashed()
     {
         $cursosDeletados = Curso::onlyTrashed()->get();
         return response()->json($cursosDeletados, 200);
     }
 
-    /**
-     * Permanently delete a soft deleted user.
-     */
     public function forceDestroy(string $id)
     {
         $curso = Curso::withTrashed()->find($id);
 
         if (!$curso) {
-            return response()->json(['message' => 'Curso não encontrado'], 404);
+            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
         }
 
         $curso->forceDelete();
@@ -124,15 +99,12 @@ class CursoController
         return response()->json(['message' => 'Curso permanentemente deletado'], 200);
     }
 
-    /**
-     * Restore a soft deleted user.
-     */
     public function restore(string $id)
     {
         $curso = Curso::withTrashed()->find($id);
 
         if (!$curso) {
-            return response()->json(['message' => 'Curso não encontrado'], 404);
+            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
         }
 
         $curso->restore();
