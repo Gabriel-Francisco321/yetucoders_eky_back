@@ -2,113 +2,83 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Curso;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use App\Http\Requests\StoreCursoRequest;
+use App\Http\Requests\UpdateCursoRequest;
+use App\Http\Resources\CursoResource;
+use App\Services\CursoService;
+use Illuminate\Http\JsonResponse;
 
 class CursoController extends Controller
 {
-    public function index()
+    public function __construct(
+        private CursoService $service
+    ) {}
+
+    public function index(): JsonResponse
     {
-        $cursos = Curso::all();
-        return response()->json($cursos, 200);
+        $cursos = $this->service->listar();
+        return CursoResource::collection($cursos)->response();
     }
 
-    public function store(Request $request)
+    public function store(StoreCursoRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descricao' => 'required|max:500',
-            'objectivos' => 'required|max:300',
-            'requisitos' => 'nullable|max:300',
-            'preco' => 'nullable|decimal:0,2',
-            'nivel' => 'required|in:Iniciante,Intermedi\u00e1rio,Avan\u00e7ado',
-            'id_instrutor' => 'required|integer|exists:instrutores,id',
-            'id_categoria' => 'required|integer|exists:categorias,id',
-        ]);
-
-        $curso = Curso::create($validated);
-
-        return response()->json($curso, 201);
+        $curso = $this->service->criar($request->validated());
+        return (new CursoResource($curso))->response()->setStatusCode(201);
     }
 
-    public function show(string $id)
+    public function show(int $id): JsonResponse
     {
-        $curso = Curso::find($id);
-
-        if (!$curso) {
-            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
+        try {
+            $curso = $this->service->buscar($id);
+            return (new CursoResource($curso))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        return response()->json($curso, 200);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateCursoRequest $request, int $id): JsonResponse
     {
-        $curso = Curso::find($id);
-
-        if (!$curso) {
-            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
+        try {
+            $curso = $this->service->actualizar($id, $request->validated());
+            return (new CursoResource($curso))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descricao' => 'required|max:500',
-            'objectivos' => 'required|max:300',
-            'requisitos' => 'nullable|max:300',
-            'preco' => 'nullable|decimal:0,2',
-            'nivel' => 'required|in:Iniciante,Intermedi\u00e1rio,Avan\u00e7ado',
-            'id_instrutor' => ['required', 'integer', 'exists:instrutores,id'],
-            'id_categoria' => 'required|integer|exists:categorias,id',
-        ]);
-
-        $curso->update($validated);
-
-        return response()->json($curso, 200);
     }
 
-    public function destroy(string $id)
+    public function destroy(int $id): JsonResponse
     {
-        $curso = Curso::find($id);
-
-        if (!$curso) {
-            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
+        try {
+            $this->service->eliminar($id);
+            return response()->json(['message' => 'Curso removido com sucesso.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $curso->delete();
-
-        return response()->json(['message' => 'Curso deletado com sucesso'], 200);
     }
 
-    public function trashed()
+    public function trashed(): JsonResponse
     {
-        $cursosDeletados = Curso::onlyTrashed()->get();
-        return response()->json($cursosDeletados, 200);
+        $cursos = $this->service->listarEliminados();
+        return CursoResource::collection($cursos)->response();
     }
 
-    public function forceDestroy(string $id)
+    public function forceDestroy(int $id): JsonResponse
     {
-        $curso = Curso::withTrashed()->find($id);
-
-        if (!$curso) {
-            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
+        try {
+            $this->service->eliminarPermanente($id);
+            return response()->json(['message' => 'Curso permanentemente deletado.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $curso->forceDelete();
-
-        return response()->json(['message' => 'Curso permanentemente deletado'], 200);
     }
 
-    public function restore(string $id)
+    public function restore(int $id): JsonResponse
     {
-        $curso = Curso::withTrashed()->find($id);
-
-        if (!$curso) {
-            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
+        try {
+            $curso = $this->service->restaurar($id);
+            return (new CursoResource($curso))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $curso->restore();
-
-        return response()->json(['message' => 'Curso restaurado com sucesso', 'data' => $curso], 200);
     }
 }

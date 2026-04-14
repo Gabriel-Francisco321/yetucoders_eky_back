@@ -2,110 +2,83 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Usuario;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use App\Http\Requests\StoreUsuarioRequest;
+use App\Http\Requests\UpdateUsuarioRequest;
+use App\Http\Resources\UsuarioResource;
+use App\Services\UsuarioService;
+use Illuminate\Http\JsonResponse;
 
 class UsuarioController extends Controller
 {
-    public function index()
+    public function __construct(
+        private UsuarioService $service
+    ) {}
+
+    public function index(): JsonResponse
     {
-        $usuarios = Usuario::all();
-        return response()->json($usuarios, 200);
+        $usuarios = $this->service->listar();
+        return UsuarioResource::collection($usuarios)->response();
     }
 
-    public function store(Request $request)
+    public function store(StoreUsuarioRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'nome' => 'required|string|max:255',
-            'email' => 'required|email|unique:usuarios',
-            'senha' => 'required|string|min:6',
-            'tipo' => 'required|in:aluno,instrutor',
-        ]);
-
-        $validated['senha'] = bcrypt($validated['senha']);
-        $usuario = Usuario::create($validated);
-
-        return response()->json($usuario, 201);
+        $usuario = $this->service->criar($request->validated());
+        return (new UsuarioResource($usuario))->response()->setStatusCode(201);
     }
 
-    public function show(string $id)
+    public function show(int $id): JsonResponse
     {
-        $usuario = Usuario::find($id);
-
-        if (!$usuario) {
-            return response()->json(['message' => 'Usuário não encontrado'], 404);
+        try {
+            $usuario = $this->service->buscar($id);
+            return (new UsuarioResource($usuario))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        return response()->json($usuario, 200);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateUsuarioRequest $request, int $id): JsonResponse
     {
-        $usuario = Usuario::find($id);
-
-        if (!$usuario) {
-            return response()->json(['message' => 'Usuário não encontrado'], 404);
+        try {
+            $usuario = $this->service->actualizar($id, $request->validated());
+            return (new UsuarioResource($usuario))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $validated = $request->validate([
-            'nome' => 'sometimes|string|max:255',
-            'email' => ['sometimes', 'email', Rule::unique('usuarios')->ignore($id)],
-            'senha' => 'sometimes|string|min:6',
-            'tipo' => 'sometimes|in:aluno,instrutor',
-        ]);
-
-        if (isset($validated['senha'])) {
-            $validated['senha'] = bcrypt($validated['senha']);
-        }
-
-        $usuario->update($validated);
-
-        return response()->json($usuario, 200);
     }
 
-    public function destroy(string $id)
+    public function destroy(int $id): JsonResponse
     {
-        $usuario = Usuario::find($id);
-
-        if (!$usuario) {
-            return response()->json(['message' => 'Usuário não encontrado'], 404);
+        try {
+            $this->service->eliminar($id);
+            return response()->json(['message' => 'Usuário removido com sucesso.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $usuario->delete();
-
-        return response()->json(['message' => 'Usuário deletado com sucesso'], 200);
     }
 
-    public function trashed()
+    public function trashed(): JsonResponse
     {
-        $usuariosDeletados = Usuario::onlyTrashed()->get();
-        return response()->json($usuariosDeletados, 200);
+        $usuarios = $this->service->listarEliminados();
+        return UsuarioResource::collection($usuarios)->response();
     }
 
-    public function forceDestroy(string $id)
+    public function forceDestroy(int $id): JsonResponse
     {
-        $usuario = Usuario::withTrashed()->find($id);
-
-        if (!$usuario) {
-            return response()->json(['message' => 'Usuário não encontrado'], 404);
+        try {
+            $this->service->eliminarPermanente($id);
+            return response()->json(['message' => 'Usuário permanentemente deletado.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $usuario->forceDelete();
-
-        return response()->json(['message' => 'Usuário permanentemente deletado'], 200);
     }
 
-    public function restore(string $id)
+    public function restore(int $id): JsonResponse
     {
-        $usuario = Usuario::withTrashed()->find($id);
-
-        if (!$usuario) {
-            return response()->json(['message' => 'Usuário não encontrado'], 404);
+        try {
+            $usuario = $this->service->restaurar($id);
+            return (new UsuarioResource($usuario))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $usuario->restore();
-
-        return response()->json(['message' => 'Usuário restaurado com sucesso', 'data' => $usuario], 200);
     }
 }

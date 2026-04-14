@@ -2,63 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Curso;
-use App\Models\Usuario;
+use App\Services\CursoUsuarioService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CursoUsuarioController extends Controller
 {
-    public function inscrever(Request $request)
+    public function __construct(
+        private CursoUsuarioService $service
+    ) {}
+
+    public function inscrever(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'usuario_id' => 'required|exists:usuarios,id',
             'curso_id' => 'required|exists:cursos,id',
         ]);
 
-        $usuario = Usuario::find($validated['usuario_id']);
-
-        if ($usuario->cursos()->where('curso_id', $validated['curso_id'])->exists()) {
-            return response()->json(['message' => 'Usu\u00e1rio j\u00e1 inscrito neste curso'], 409);
+        try {
+            $this->service->inscrever($validated['usuario_id'], $validated['curso_id']);
+            return response()->json(['message' => 'Inscri\u00e7\u00e3o realizada com sucesso'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $usuario->cursos()->attach($validated['curso_id']);
-
-        return response()->json(['message' => 'Inscri\u00e7\u00e3o realizada com sucesso'], 201);
     }
 
-    public function cancelar(Request $request)
+    public function cancelar(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'usuario_id' => 'required|exists:usuarios,id',
             'curso_id' => 'required|exists:cursos,id',
         ]);
 
-        $usuario = Usuario::find($validated['usuario_id']);
-
-        $usuario->cursos()->detach($validated['curso_id']);
+        $this->service->cancelar($validated['usuario_id'], $validated['curso_id']);
 
         return response()->json(['message' => 'Inscri\u00e7\u00e3o cancelada com sucesso'], 200);
     }
 
-    public function cursosDoUsuario($usuario_id)
+    public function cursosDoUsuario(int $usuario_id): JsonResponse
     {
-        $usuario = Usuario::with('cursos')->find($usuario_id);
-
-        if (!$usuario) {
-            return response()->json(['message' => 'Usu\u00e1rio n\u00e3o encontrado'], 404);
+        try {
+            $cursos = $this->service->cursosDoUsuario($usuario_id);
+            return response()->json($cursos, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        return response()->json($usuario->cursos, 200);
     }
 
-    public function usuariosDoCurso($curso_id)
+    public function usuariosDoCurso(int $curso_id): JsonResponse
     {
-        $curso = Curso::with('usuarios')->find($curso_id);
-
-        if (!$curso) {
-            return response()->json(['message' => 'Curso n\u00e3o encontrado'], 404);
+        try {
+            $usuarios = $this->service->usuariosDoCurso($curso_id);
+            return response()->json($usuarios, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        return response()->json($curso->usuarios, 200);
     }
 }

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Curso;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Usuario extends Model
+class Usuario extends Authenticatable
 {
-    use SoftDeletes;
+    use HasApiTokens, SoftDeletes;
 
     protected $table = 'usuarios';
 
@@ -17,23 +17,27 @@ class Usuario extends Model
         'email',
         'senha',
         'tipo',
-        'data_criacao',
     ];
 
     protected $hidden = [
         'senha',
     ];
 
-    protected $casts = [
-        'data_criacao' => 'datetime',
-    ];
+    public function getAuthPassword()
+    {
+        return $this->senha;
+    }
 
-    
     public function cursos()
     {
         return $this->belongsToMany(Curso::class, 'curso_usuario', 'usuario_id', 'curso_id')
-                    ->withTimestamps()
-                    ->withPivot('deleted_at')
-                    ->wherePivotNull('deleted_at');
+            ->withTimestamps()
+            ->withPivot('deleted_at')
+            ->wherePivotNull('deleted_at');
+    }
+
+    public function avaliacoes()
+    {
+        return $this->hasMany(Avaliacao::class, 'id_usuario');
     }
 }

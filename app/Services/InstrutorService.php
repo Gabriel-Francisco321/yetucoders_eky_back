@@ -47,4 +47,33 @@ class InstrutorService
         $instrutor = $this->buscar($id);
         $instrutor->delete();
     }
+
+    public function listarEliminados(): LengthAwarePaginator
+    {
+        return Instrutor::onlyTrashed()->with('usuario')->latest()->paginate(10);
+    }
+
+    public function restaurar(int $id): Instrutor
+    {
+        $instrutor = Instrutor::withTrashed()->find($id);
+
+        if (!$instrutor) {
+            throw new \Exception('Instrutor não encontrado.', 404);
+        }
+
+        $instrutor->restore();
+
+        return $instrutor->load('usuario');
+    }
+
+    public function eliminarPermanente(int $id): void
+    {
+        $instrutor = Instrutor::withTrashed()->find($id);
+
+        if (!$instrutor) {
+            throw new \Exception('Instrutor não encontrado.', 404);
+        }
+
+        $instrutor->forceDelete();
+    }
 }

@@ -2,59 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Avaliacao;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreAvaliacaoRequest;
+use App\Http\Resources\AvaliacaoResource;
+use App\Services\AvaliacaoService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class AvaliacaoController extends Controller
 {
-    public function index()
+    public function __construct(
+        private AvaliacaoService $service
+    ) {}
+
+    public function index(): JsonResponse
     {
-        $avaliacoes = Avaliacao::where('id_usuario', Auth::id())->get();
-        return response()->json($avaliacoes, 200);
+        $avaliacoes = $this->service->listarPorUsuario(Auth::id());
+        return AvaliacaoResource::collection($avaliacoes)->response();
     }
 
-    public function store(Request $request)
+    public function store(StoreAvaliacaoRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'nota' => 'required|integer|min:0|max:100',
-            'comentario' => 'nullable|string',
-            'id_curso' => 'required|integer|exists:cursos,id',
-        ]);
-
-        $avaliacao = Avaliacao::create([
-            'nota' => $validated['nota'],
-            'comentario' => $validated['comentario'] ?? null,
-            'id_usuario' => Auth::id(),
-            'id_curso' => $validated['id_curso'],
-        ]);
-
-        return response()->json($avaliacao, 201);
+        $avaliacao = $this->service->criar($request->validated(), Auth::id());
+        return (new AvaliacaoResource($avaliacao))->response()->setStatusCode(201);
     }
 
-    public function destroy($id)
+    public function destroy(int $id): JsonResponse
     {
-        $avaliacao = Avaliacao::where('id', $id)
-            ->where('id_usuario', Auth::id())
-            ->first();
-
-        if (!$avaliacao) {
-            return response()->json(['message' => 'Avalia\u00e7\u00e3o n\u00e3o encontrada'], 404);
+        try {
+            $this->service->eliminar($id, Auth::id());
+            return response()->json(['message' => 'Avalia\u00e7\u00e3o removida com sucesso.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $avaliacao->delete();
-
-        return response()->json(['message' => 'Avalia\u00e7\u00e3o removida com sucesso'], 200);
     }
 
-    public function avaliacaoPorCurso(string $id_curso)
+    public function avaliacaoPorCurso(int $id_curso): JsonResponse
     {
-        $avaliacoes = Avaliacao::where('id_curso', $id_curso)->get();
-        $classificacao = Avaliacao::where('id_curso', $id_curso)->avg('nota');
+        $resultado = $this->service->listarPorCurso($id_curso);
 
         return response()->json([
-            'avaliacoes' => $avaliacoes,
-            'classificacao' => $classificacao,
+            'avaliacoes' => AvaliacaoResource::collection($resultado['avaliacoes']),
+            'classificacao' => $resultado['classificacao'],
         ], 200);
     }
 }

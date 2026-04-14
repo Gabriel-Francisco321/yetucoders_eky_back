@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreInstrutorRequest;
 use App\Http\Requests\UpdateInstrutorRequest;
 use App\Http\Resources\InstrutorResource;
-use App\Models\Instrutor;
 use App\Services\InstrutorService;
 use Illuminate\Http\JsonResponse;
 
@@ -57,35 +56,29 @@ class InstrutorController extends Controller
         }
     }
 
-    public function trashed()
+    public function trashed(): JsonResponse
     {
-        $instrutoresDeletados = Instrutor::onlyTrashed()->get();
-        return response()->json($instrutoresDeletados, 200);
+        $instrutores = $this->service->listarEliminados();
+        return InstrutorResource::collection($instrutores)->response();
     }
 
-    public function forceDestroy(string $id)
+    public function forceDestroy(int $id): JsonResponse
     {
-        $instrutor = Instrutor::withTrashed()->find($id);
-
-        if (!$instrutor) {
-            return response()->json(['message' => 'Instrutor n\u00e3o encontrado'], 404);
+        try {
+            $this->service->eliminarPermanente($id);
+            return response()->json(['message' => 'Instrutor permanentemente deletado.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $instrutor->forceDelete();
-
-        return response()->json(['message' => 'Instrutor permanentemente deletado'], 200);
     }
 
-    public function restore(string $id)
+    public function restore(int $id): JsonResponse
     {
-        $instrutor = Instrutor::withTrashed()->find($id);
-
-        if (!$instrutor) {
-            return response()->json(['message' => 'Instrutor n\u00e3o encontrado'], 404);
+        try {
+            $instrutor = $this->service->restaurar($id);
+            return (new InstrutorResource($instrutor))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $instrutor->restore();
-
-        return response()->json(['message' => 'Instrutor restaurado com sucesso', 'data' => $instrutor], 200);
     }
 }

@@ -2,100 +2,83 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Categoria;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreCategoriaRequest;
+use App\Http\Requests\UpdateCategoriaRequest;
+use App\Http\Resources\CategoriaResource;
+use App\Services\CategoriaService;
+use Illuminate\Http\JsonResponse;
 
 class CategoriaController extends Controller
 {
-    public function index()
+    public function __construct(
+        private CategoriaService $service
+    ) {}
+
+    public function index(): JsonResponse
     {
-        $categorias = Categoria::all();
-        return response()->json($categorias, 200);
+        $categorias = $this->service->listar();
+        return CategoriaResource::collection($categorias)->response();
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoriaRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descricao' => 'required|max:500',
-        ]);
-
-        $categoria = Categoria::create($validated);
-
-        return response()->json($categoria, 201);
+        $categoria = $this->service->criar($request->validated());
+        return (new CategoriaResource($categoria))->response()->setStatusCode(201);
     }
 
-    public function show(string $id)
+    public function show(int $id): JsonResponse
     {
-        $categoria = Categoria::find($id);
-
-        if (!$categoria) {
-            return response()->json(['message' => 'Categoria n\u00e3o encontrada'], 404);
+        try {
+            $categoria = $this->service->buscar($id);
+            return (new CategoriaResource($categoria))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        return response()->json($categoria, 200);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateCategoriaRequest $request, int $id): JsonResponse
     {
-        $categoria = Categoria::find($id);
-
-        if (!$categoria) {
-            return response()->json(['message' => 'Categoria n\u00e3o encontrada'], 404);
+        try {
+            $categoria = $this->service->actualizar($id, $request->validated());
+            return (new CategoriaResource($categoria))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descricao' => 'required|max:500',
-        ]);
-
-        $categoria->update($validated);
-
-        return response()->json($categoria, 200);
     }
 
-    public function destroy(string $id)
+    public function destroy(int $id): JsonResponse
     {
-        $categoria = Categoria::find($id);
-
-        if (!$categoria) {
-            return response()->json(['message' => 'Categoria n\u00e3o encontrada'], 404);
+        try {
+            $this->service->eliminar($id);
+            return response()->json(['message' => 'Categoria removida com sucesso.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $categoria->delete();
-
-        return response()->json(['message' => 'Categoria deletada com sucesso'], 200);
     }
 
-    public function trashed()
+    public function trashed(): JsonResponse
     {
-        $categoriasDeletadas = Categoria::onlyTrashed()->get();
-        return response()->json($categoriasDeletadas, 200);
+        $categorias = $this->service->listarEliminados();
+        return CategoriaResource::collection($categorias)->response();
     }
 
-    public function forceDestroy(string $id)
+    public function forceDestroy(int $id): JsonResponse
     {
-        $categoria = Categoria::withTrashed()->find($id);
-
-        if (!$categoria) {
-            return response()->json(['message' => 'Categoria n\u00e3o encontrada'], 404);
+        try {
+            $this->service->eliminarPermanente($id);
+            return response()->json(['message' => 'Categoria permanentemente deletada.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $categoria->forceDelete();
-
-        return response()->json(['message' => 'Categoria permanentemente deletada'], 200);
     }
 
-    public function restore(string $id)
+    public function restore(int $id): JsonResponse
     {
-        $categoria = Categoria::withTrashed()->find($id);
-
-        if (!$categoria) {
-            return response()->json(['message' => 'Categoria n\u00e3o encontrada'], 404);
+        try {
+            $categoria = $this->service->restaurar($id);
+            return (new CategoriaResource($categoria))->response();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
-
-        $categoria->restore();
-
-        return response()->json(['message' => 'Categoria restaurada com sucesso', 'data' => $categoria], 200);
     }
 }
